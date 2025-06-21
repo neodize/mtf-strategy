@@ -1,43 +1,82 @@
 version: '3.8'
 
 services:
-  mtf-trading-bot:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    container_name: mtf-trading-bot
+  trading-bot:
+    build: .
+    container_name: trading-bot
     restart: unless-stopped
     environment:
-      - PYTHONUNBUFFERED=1
-    env_file:
-      - config/.env
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - EXCHANGE_API_KEY=${EXCHANGE_API_KEY}
+      - EXCHANGE_SECRET=${EXCHANGE_SECRET}
+      - LOG_LEVEL=INFO
+      - SANDBOX_MODE=true
     volumes:
-      - ./config:/app/config:ro  # Read-only config
-      - ./logs:/app/logs         # Writable logs
-      - ./data:/app/data         # Writable data
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - ./config.yaml:/app/config.yaml:ro
     networks:
       - trading-network
     healthcheck:
-      test: ["CMD", "python", "-c", "print('Bot is running')"]
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
-    # Resource limits (optional but recommended)
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
+
+  # Optional: Add Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: trading-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - trading-network
+
+  # Optional: Add database for signal storage
+  postgres:
+    image: postgres:15-alpine
+    container_name: trading-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=trading_bot
+      - POSTGRES_USER=trading_user
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - trading-network
+
+  # Optional: Add monitoring with Grafana
+  grafana:
+    image: grafana/grafana:latest
+    container_name: trading-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    networks:
+      - trading-network
+    depends_on:
+      - postgres
+
+volumes:
+  redis_data:
+  postgres_data:
+  grafana_data:
 
 networks:
   trading-network:
     driver: bridge
-
-# Optional: Add volume for persistent data
-volumes:
-  trading-data:
-    driver: local
