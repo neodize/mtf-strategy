@@ -1,18 +1,17 @@
-# ----------  BASE IMAGE WITH PRE‑BUILT WHEEL SUPPORT ----------
-FROM python:3.9-slim      # wheel exists for CPython 3.9
+FROM python:3.9-slim
 
 WORKDIR /app
 
-# ----------  WHEEL‑FRIENDLY DEPENDENCIES ----------
+# Preinstall NumPy and TA-Lib from wheels
 RUN pip install --upgrade pip
-RUN pip install numpy==1.24.4 TA-Lib==0.4.28   # <— installs wheel, no GCC
+RUN pip install numpy==1.24.4 TA-Lib==0.4.28
 
-# ----------  REST OF PYTHON DEPENDENCIES ----------
+# Install other requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# ----------  APP CODE ----------
+# Copy bot files
 COPY trading_bot.py .
-COPY config/config.yaml ./config.yaml   # adjust path if needed
+COPY config/config.yaml .
 
 CMD ["python", "trading_bot.py"]
