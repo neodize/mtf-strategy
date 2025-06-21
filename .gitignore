@@ -1,8 +1,15 @@
 # Sensitive files
 config/.env
 *.log
-logs/
-data/
+
+# Ignore everything in logs/, but allow .gitkeep
+logs/*
+!logs/.gitkeep
+
+# Ignore everything in data/, but allow .gitkeep
+data/*
+!data/.gitkeep
+
 .DS_Store
 *.pyc
 __pycache__/
