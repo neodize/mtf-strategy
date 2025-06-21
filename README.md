@@ -26,3 +26,5 @@ Multi-timeframe cryptocurrency trading bot with RSI and breakout strategies.
 - Telegram notifications enabled
 
 
+# Refresh commit
+# Refresh commit
