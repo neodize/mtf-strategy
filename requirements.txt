@@ -1,6 +1,6 @@
-pandas==2.1.4
-ccxt==4.1.48
-requests==2.31.0
-python-dotenv==1.0.0
-schedule==1.2.0
-PyYAML==6.0.1
+pandas
+ccxt
+schedule
+python-dotenv
+PyYAML
+requests
