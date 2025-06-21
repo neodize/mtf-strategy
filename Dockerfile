@@ -31,7 +31,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY trading_bot.py .
-COPY config.yaml .
+COPY config/config.yaml ./config.yaml
 
 # Create logs directory
 RUN mkdir -p /app/logs
